@@ -1,2 +1,8 @@
+Wave~=0.0.2
+azure-cognitiveservices-speech~=1.31.0
+pydub~=0.25.1
 pywebview~=4.2.2
-complexaudio
+PyAudio~=0.2.11
+openai~=0.27.8
+numpy~=1.24.3
+audioop

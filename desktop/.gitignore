@@ -1,5 +1,8 @@
 env.py
+
+# Audio files
 narration.wav
+user_response.wav
 
 #Byte-compiled / optimized / DLL files
 __pycache__/
