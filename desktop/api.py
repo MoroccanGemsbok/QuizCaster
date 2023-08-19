@@ -8,6 +8,7 @@ import math
 import numpy
 from collections import deque
 import openai
+import base64
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -26,6 +27,11 @@ class Api:
         self.wf = None
         self.stop = False
         self.threshold = threshold
+
+    def upload_file(self, raw):
+        binary_data = base64.b64decode(raw)
+        with open("output.pdf", "wb") as pdf_file:
+            pdf_file.write(binary_data)
 
     def audio_int(self, num_samples=50):
         """ Gets average audio intensity of your mic sound. You can use it to get
