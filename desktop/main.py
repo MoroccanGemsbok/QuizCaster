@@ -6,7 +6,7 @@ import audioop
 from api import Api, CHUNK, FORMAT, CHANNELS, RATE
 
 
-def audio_int(num_samples=50):
+def audio_init(num_samples=50):
     p = pyaudio.PyAudio()
     stream = p.open(format=FORMAT,
                     channels=CHANNELS,
@@ -25,7 +25,7 @@ def audio_int(num_samples=50):
 
 def main():
     try:
-        threshold = audio_int()
+        threshold = audio_init()
         api = Api(threshold)
         webview.create_window(
             "QuizCaster", "http://192.168.2.162:3000/",
