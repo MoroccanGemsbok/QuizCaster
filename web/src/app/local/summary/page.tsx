@@ -38,15 +38,19 @@ export default function Page() {
 
       <div className="flex gap-4">
         <button
-          className="bg-gray-500 py-3 px-8 rounded-full font-semibold"
+          className={`py-3 px-8 rounded-full font-semibold ${currentQuiz.audioMode ? "bg-green-600" : "bg-red-600"}`}
           onClick={async () => {
+            currentQuiz.setAudioMode(!currentQuiz.audioMode)
             // @ts-ignore
-            await window.pywebview.api.narrate_stop()
-            // @ts-ignore
-            await window.pywebview.api.narrate_summary(currentQuiz.summary.replace(/^#*/gm, ""))
+            if (currentQuiz.audioMode && window.pywebview) {
+              // @ts-ignore
+              await window.pywebview.api.narrate_stop()
+              // @ts-ignore
+              await window.pywebview.api.narrate_start(currentQuiz.summary.replace(/^#*/gm, ""))
+            }
           }}
         >
-          Read out loud
+          {currentQuiz.audioMode ? "Disable narration" : "Enable narration"}
         </button>
 
         <button

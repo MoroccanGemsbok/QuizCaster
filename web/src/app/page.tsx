@@ -1,5 +1,6 @@
 "use client";
 
+import { btoa } from "buffer";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,8 +17,10 @@ export default function Page() {
       const reader = new FileReader();
       reader.onload = (event: any) => {
         const content = event.target.result;
+        const buffer = Buffer.from(content, "utf-8");
+        const base64Encoded = buffer.toString("base64");
         // @ts-ignore
-        window.pywebview.api.upload_file(content)
+        window.pywebview.api.upload_file(base64Encoded)
       };
       reader.readAsText(selectedFile);
     }
