@@ -67,7 +67,7 @@ export default function Page({ params }: Params) {
         {currentQuestion.question}
       </h1>
       <div className="h-1 bg-gray-300 w-full">
-        <div className="h-1 bg-sky-300" style={{ width: `${50}%` }} />
+        <div className="h-1 bg-sky-300" style={{ width: `${0}%` }} />
       </div>
 
       {state === "MC" && (
