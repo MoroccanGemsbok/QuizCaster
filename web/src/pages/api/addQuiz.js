@@ -1,7 +1,5 @@
-// pages/api/addQuiz.js
-
-import { MongoClient } from 'mongodb';
-import { v4 as uuidv4 } from 'uuid';
+import { MongoClient } from "mongodb";
+import { v4 as uuidv4 } from "uuid";
 
 let cachedDb = null;
 
@@ -14,7 +12,7 @@ async function connectToDatabase() {
     useUnifiedTopology: true,
   });
 
-  const db = client.db('quizcaster');
+  const db = client.db("quizcaster");
   cachedDb = db;
   return db;
 }
@@ -22,7 +20,7 @@ async function connectToDatabase() {
 export default async function handler(req, res) {
   const { method } = req;
 
-  if (method === 'POST') {
+  if (method === "POST") {
     const db = await connectToDatabase();
 
     const quiz = {
@@ -31,13 +29,13 @@ export default async function handler(req, res) {
     };
 
     try {
-      const result = await db.collection('quizzes').insertOne(quiz);
+      const result = await db.collection("quizzes").insertOne(quiz);
       return res.status(200).json({ uuid: result.insertedId });
     } catch (error) {
-      return res.status(500).json({ error: 'Failed to save quiz.' });
+      return res.status(500).json({ error: "Failed to save quiz." });
     }
   } else {
-    res.setHeader('Allow', 'POST');
+    res.setHeader("Allow", "POST");
     res.status(405).end(`Method ${method} Not Allowed`);
   }
 }

@@ -7,6 +7,7 @@ import audioop
 import math
 from collections import deque
 import openai
+from text_generation.processing import get_grouped_text, get_summary, get_questions
 
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
@@ -188,3 +189,19 @@ class Api:
             else:
                 self.azure_speak(f"Incorrect! The correct answer is {correct}- {answers[int(correct) - 1]}.")
                 return False
+
+    def get_grouped_text(self, input_string, type, SENTENCES_PER_PROMPT=5):
+        grouped_text = get_grouped_text(input_string, type, SENTENCES_PER_PROMPT)
+        return grouped_text
+
+    def return_summary(self, grouped_text):
+        summary = get_summary(grouped_text)
+        return summary
+    
+    def return_quiz(self, grouped_text):
+        quiz = get_questions(grouped_text)
+        return quiz
+
+
+
+    

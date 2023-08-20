@@ -3,13 +3,13 @@
 import axios from "axios";
 // @ts-ignore
 import { useCurrentQuiz } from "../contexts/QuizContext.tsx";
-import { btoa } from "buffer";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Page() {
   const [currentFileName, setCurrentFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isParsingPDF, setIsParsingPDF] = useState(false);
   const quizData = useCurrentQuiz();
   const router = useRouter();
   const [uuidSearch, setUuidSearch] = useState("");
@@ -54,21 +54,31 @@ export default function Page() {
     }
   }
   
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
-      reader.onload = (event: ProgressEvent<FileReader>) => {
+      reader.onload = async(event: ProgressEvent<FileReader>) => {
         const base64String = event.target?.result?.toString()?.split(',')[1];
+        setIsParsingPDF(true);
         if (base64String) {
-          axios.post('/api/process', { file: base64String })
-            .then(response => {
-              console.log(response.data);
-            })
-            .catch(error => {
-              console.error('Error processing file:', error);
-            });
+          // @ts-ignore
+          const grouped_text = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
+          // @ts-ignore
+          const summary = await window.pywebview.api.return_summary(grouped_text);
+          // @ts-ignore
+          const quiz = await window.pywebview.api.return_quiz(grouped_text);
+
+          quizData.setSummary(summary);
+          quizData.setQuestions(quiz);
+          console.log("summary:");
+          console.log(summary);
+          console.log("quiz:");
+          console.log(quiz);
+
+          console.log("andy");
+          setIsParsingPDF(false);
         }
       };
       reader.readAsDataURL(selectedFile);
@@ -89,12 +99,12 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading ? "bg-gray-400" : "bg-emerald-600"
+              isLoading || isParsingPDF ? "bg-gray-400" : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading}
+            disabled={isLoading || isParsingPDF}
           >
-            {isLoading ? "Loading..." : "Go"}
+            {isLoading ? "Loading..." : isParsingPDF ? "Loading PDF..." : "Go"}
           </button>
         </div>
 

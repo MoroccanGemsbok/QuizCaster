@@ -2,14 +2,16 @@ import random
 
 
 def scramble_answers(question):
-    answers = question["answers"]
 
-    # HAHAHAHAHAAHAHAHAAHAH
-    correct_answer = answers[question["correct_answer"][0]]
+    correct_answer_index = question["answer"]
+    if type(correct_answer_index) == list:
+        correct_answer_index = correct_answer_index[0]
 
-    random.shuffle(answers)
-    question["answers"] = answers
-    question["correct_answer"] = answers.index(correct_answer)
+    correct_answer = question["options"][correct_answer_index]
+
+    random.shuffle(question["options"])
+    shuffled_answer_index = question["options"].index(correct_answer)
+    question["answer"] = shuffled_answer_index
 
     # remove context-specific questions
     if "mentioned" in question["question"] or "text" in question["question"] or "paragraph" in question["question"]:
@@ -32,5 +34,7 @@ def process_tf(question):
         query = query[0].upper() + query[1:]
 
     question["question"] = query
-    question["correct_answer"] = question["correct_answer"][0]
+    if type(question["answer"]) == list:
+        question["answer"] = question["answer"][0]
+        
     return question

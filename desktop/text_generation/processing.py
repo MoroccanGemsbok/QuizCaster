@@ -1,8 +1,10 @@
-import PyPDF2
+import base64
+import io
+from PyPDF2 import PdfReader
 import openai
 from pprint import pprint
-from preprocessing import replace_ligatures, remove_duplicates, remove_hyphens, to_lowercase, remove_newlines, split_into_sentences, group_sentences
-from postprocessing import process_tf, scramble_answers
+from text_generation.preprocessing import replace_ligatures, remove_duplicates, remove_hyphens, to_lowercase, remove_newlines, split_into_sentences, group_sentences
+from text_generation.postprocessing import process_tf, scramble_answers
 import time
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -16,21 +18,18 @@ start = time.time()
 
 GPT_KEY = openai_api_key
 openai.api_key = GPT_KEY
-SENTENCES_PER_PROMPT = 5
-QUESTIONS_PER_PROMPT = 1
-PATH = "https://en.wikipedia.org/wiki/Genshin_Impact"
 TYPE = "website"  # one of: "pdf", "md", "website", "youtube"
-PREPROMPT_MC = """I will give you a paragraph. You will create a JSON of 1 multiple-choice question and answers from the information in the paragraph.
+PREPROMPT_MC = """I will give you a paragraph. You will create a JSON of 1 multiple-choice question and options from the information in the paragraph.
 They must be output in the following format:
-{ "question": <question here>, "answers": [<answer 1>, <answer 2>, <answer 3>, <answer 4>],  "correct_answer": [<index of correct answer>]}
+{ "question": <question here>, "options": [<answer 1>, <answer 2>, <answer 3>, <answer 4>],  "answer": [<index of correct answer>]}
 
 
 The paragraph to be sampled from is as follows:
 
 """
-PREPROMPT_TF = """I will give you a paragraph. You will create a JSON of 1 true-false statement and answers from the information in the paragraph.
+PREPROMPT_TF = """I will give you a paragraph. You will create a JSON of 1 true-false statement and options from the information in the paragraph.
 They must be output in the following format:
-{ "question": <statement here>, "answers": ["true", "false"],  "correct_answer": [<index of correct answer>]}
+{ "question": <statement here>, "options": ["true", "false"],  "answer": [<index of correct answer>]}
 
 
 The paragraph to be sampled from is as follows:
@@ -68,6 +67,7 @@ def gpt_prompt(index, text, ALL_QUESTIONS):
 
     response_json = json.loads(response.choices[0].message.content)
 
+
     if index % 2 == 0:
         response_json = scramble_answers(response_json)
         response_json["format"] = "MC"
@@ -75,13 +75,14 @@ def gpt_prompt(index, text, ALL_QUESTIONS):
         response_json = process_tf(response_json)
         response_json["format"] = "TF"
 
+
     ALL_QUESTIONS.append(response_json)
 
 
-def read_pdf(file_path: str) -> str:
-    pdfFileObj = open(file_path, 'rb')
-    print(type(pdfFileObj))
-    reader = PyPDF2.PdfReader(pdfFileObj)
+def read_pdf(b64string: str) -> str:
+    buffer=base64.b64decode(b64string)
+    f=io.BytesIO(buffer)
+    reader = PdfReader(f)
 
     for i, page in enumerate(reader.pages):
         if i == 0:
@@ -92,7 +93,7 @@ def read_pdf(file_path: str) -> str:
     return text
 
 
-def pdf_preprocess(text: str) -> list[str]:
+def pdf_preprocess(text: str, SENTENCES_PER_PROMPT) -> list[str]:
     processed_text = split_into_sentences(replace_ligatures(text))
     grouped_text = group_sentences(processed_text, SENTENCES_PER_PROMPT)
     return grouped_text
@@ -105,7 +106,7 @@ def read_markdown(file_path: str) -> str:
     return html_content
 
 
-def markdown_preprocess(text: list[str]) -> list[str]:
+def markdown_preprocess(text: list[str], SENTENCES_PER_PROMPT) -> list[str]:
     text = [line for line in text if line != '']
     text = remove_duplicates(text)
     text = group_sentences(text, SENTENCES_PER_PROMPT)
@@ -123,18 +124,19 @@ def process_html(html_content):
 
 
 # type is either "pdf", "md", or "website"
-def get_grouped_text(path: str, type: str) -> list[str]:
+def get_grouped_text(path: str, type: str, SENTENCES_PER_PROMPT) -> list[str]:
     if type == "pdf":
         text = read_pdf(path)
-        grouped_text = pdf_preprocess(text)
+        grouped_text = pdf_preprocess(text, SENTENCES_PER_PROMPT)
     elif type == "md":
         text = process_html(read_markdown(path)).splitlines()
-        grouped_text = markdown_preprocess(text)
+        grouped_text = markdown_preprocess(text, SENTENCES_PER_PROMPT)
     elif type == "website":
         page = requests.get(path)
         text = process_html(page.content).splitlines()
-        grouped_text = markdown_preprocess(text)
+        grouped_text = markdown_preprocess(text, SENTENCES_PER_PROMPT)
 
+    print(grouped_text)
     return grouped_text
 
 
@@ -147,6 +149,7 @@ def get_summary(grouped_text) -> list[str]:
         results = executor.map(partial_func, text_range)
 
     SUMMARY = ' '.join(SUMMARY)
+    print(SUMMARY)
     return SUMMARY
 
 
@@ -154,7 +157,8 @@ def get_questions(grouped_text) -> list[dict]:
     ALL_QUESTIONS = []
     text_range = list(range(0, len(grouped_text)))
     with ThreadPoolExecutor() as executor:
-        partial_func = partial(gpt_prompt, text=grouped_text)
+        partial_func = partial(gpt_prompt, text=grouped_text, ALL_QUESTIONS=ALL_QUESTIONS)
         results = executor.map(partial_func, text_range)
 
+    print(ALL_QUESTIONS)
     return ALL_QUESTIONS
