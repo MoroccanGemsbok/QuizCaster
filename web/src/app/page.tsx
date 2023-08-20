@@ -27,7 +27,6 @@ export default function Page() {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);
       router.push(`/local/summary?uuid=${response.data.uuid}`);
-      router.push(`/local/summary?uuid=${response.data.uuid}`);
       setIsLoading(false);
     } catch (error) {
       console.error("Error saving quiz:", error);
