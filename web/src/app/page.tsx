@@ -68,7 +68,7 @@ export default function Page() {
       const reader = new FileReader();
       reader.onload = async(event: ProgressEvent<FileReader>) => {
         const base64String = event.target?.result?.toString()?.split(',')[1];
-        setIsParsingPDF(true);
+        setIsParsingFile(true);
         if (base64String) {
           // @ts-ignore
           const grouped_text_summary = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
@@ -103,10 +103,10 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading || isParsingPDF ? "bg-gray-400" : "bg-emerald-600"
+              isLoading || isParsingFile ? "bg-gray-400" : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading || isParsingPDF}
+            disabled={isLoading || isParsingFile}
           >
             {isLoading ? "Loading..." : isParsingFile ? "Loading file..." : "Go"}
           </button>
