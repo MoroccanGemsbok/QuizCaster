@@ -12,6 +12,7 @@ import ReactMarkdown from "react-markdown";
 export default function Page() {
   const router = useRouter();
   const currentQuiz = useCurrentQuiz();
+  const { questions, setQuestions } = useCurrentQuiz();
   const searchParams = useSearchParams();
   const search = searchParams?.get('uuid');
   const [sliderValue, setSlidervalue] = useState(3);
@@ -27,6 +28,7 @@ export default function Page() {
   }, []);
 
   function handleSliderChange(event: React.ChangeEvent<HTMLInputElement>) {
+    console.log("setting quiz length to", sliderValue);
     setSlidervalue(parseInt(event.target.value));
   }
 
@@ -79,7 +81,9 @@ export default function Page() {
         <button
           className="bg-sky-600 py-3 px-8 rounded-full font-semibold"
           onClick={() => {
-            
+            const truncatedQuestions = questions.slice(0, sliderValue);
+            setQuestions(truncatedQuestions);
+            console.log("truncated questions", truncatedQuestions);
             router.push("/local/quiz/1")
           }}
         >
