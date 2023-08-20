@@ -19,6 +19,11 @@ def replace_ligatures(text: str) -> str:
         text = text.replace(search, replace)
     return text
 
+def remove_close_periods(input_string):
+    pattern = r'\.(.{0,40}\.)'
+    result = re.sub(pattern, r'\1', input_string)
+    return result
+
 
 def remove_hyphens(text: str) -> str:
     """
