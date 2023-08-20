@@ -24,6 +24,18 @@ export default function Page({ params }: Params) {
   const router = useRouter();
 
   useEffect(() => {
+    const onStateChange = async () => {
+      const res = await window.pywebview.api.continue_screen();
+      if (res) {
+        router.push(isLastQuestion ? "/" : `/local/quiz/${questionNumber + 1}`)
+      }
+    }
+    if (state === "Answer") {
+      onStateChange();
+    }
+  }, [state])
+
+  useEffect(() => {
     const startSpeech = async () => {
       // @ts-ignore
       const correct = await window.pywebview.api.question_set(currentQuestion)
@@ -65,15 +77,9 @@ export default function Page({ params }: Params) {
               key={index}
               className={`flex justify-center items-center rounded-3xl cursor-pointer 
                 ${["bg-red-600", "bg-green-700", "bg-blue-500", "bg-amber-600"][index]}`}
-              onClick={async () => {
-                // @ts-ignore
-                const res = window.pywebview.api.continue_screen();
-                if (res) {
-                  setAnswer(index);
-                  setState("Answer");
-                } else {
-                  router.push("/")
-                }
+              onClick={() => {
+                setAnswer(index);
+                setState("Answer");
               }}>
               <p className="text-2xl p-8">
                 {option}
@@ -89,15 +95,9 @@ export default function Page({ params }: Params) {
               key={index}
               className={`flex justify-center items-center rounded-3xl cursor-pointer 
                 ${["bg-green-700", "bg-red-600"][index]}`}
-              onClick={async () => {
-                // @ts-ignore
-                const res = window.pywebview.api.continue_screen();
-                if (res) {
-                  setAnswer(index);
-                  setState("Answer");
-                } else {
-                  router.push("/")
-                }
+              onClick={() => {
+                setAnswer(index);
+                setState("Answer");
               }}>
               <p className="text-2xl p-8">
                 {option}

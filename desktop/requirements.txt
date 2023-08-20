@@ -10,3 +10,4 @@ bs4
 PyPDF2
 joblib
 youtube_transcript_api
+scikit-learn==1.2.2

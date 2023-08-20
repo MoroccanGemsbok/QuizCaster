@@ -92,7 +92,6 @@ class Api:
             print(f"Speech synthesis canceled: {cancellation_details}")
 
     def listening(self, threshold):
-        #self.stop = False
         p = pyaudio.PyAudio()
         stream = p.open(format=FORMAT,
                         channels=CHANNELS,

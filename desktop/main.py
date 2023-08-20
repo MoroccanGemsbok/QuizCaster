@@ -26,13 +26,14 @@ def audio_init(num_samples=50):
 def main():
     try:
         threshold = audio_init()
+        print(f"Ready - Threshold is: {threshold}")
         api = Api(threshold)
         webview.create_window(
             "QuizCaster", "http://localhost:3000/",
             # 192.168.2.162
             width=1600, height=1000, js_api=api
         )
-        webview.start(debug=True #aodijfdsapofijsaofdisajfdpoaijfpodij
+        webview.start(debug=False #aodijfdsapofijsaofdisajfdpoaijfpodij
                       )
     except Exception as e:
         print(e)
