@@ -65,9 +65,15 @@ export default function Page({ params }: Params) {
               key={index}
               className={`flex justify-center items-center rounded-3xl cursor-pointer 
                 ${["bg-red-600", "bg-green-700", "bg-blue-500", "bg-amber-600"][index]}`}
-              onClick={() => {
-                setAnswer(index);
-                setState("Answer");
+              onClick={async () => {
+                // @ts-ignore
+                const res = window.pywebview.api.continue_screen();
+                if (res) {
+                  setAnswer(index);
+                  setState("Answer");
+                } else {
+                  router.push("/")
+                }
               }}>
               <p className="text-2xl p-8">
                 {option}
@@ -83,11 +89,17 @@ export default function Page({ params }: Params) {
               key={index}
               className={`flex justify-center items-center rounded-3xl cursor-pointer 
                 ${["bg-green-700", "bg-red-600"][index]}`}
-              onClick={() => {
-                setAnswer(index);
-                setState("Answer");
+              onClick={async () => {
+                // @ts-ignore
+                const res = window.pywebview.api.continue_screen();
+                if (res) {
+                  setAnswer(index);
+                  setState("Answer");
+                } else {
+                  router.push("/")
+                }
               }}>
-              <p className="text-2xl p-8 capitalize">
+              <p className="text-2xl p-8">
                 {option}
               </p>
             </div>
