@@ -13,11 +13,12 @@ export default function Page() {
   const quizData = useCurrentQuiz();
   const router = useRouter();
   const [urlInput, setUrlInput] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const [urlLoading, setUrlLoading] = useState(false);
   const [uuidSearch, setUuidSearch] = useState("");
   const [uuidError, setUuidError] = useState<string | null>(null);
   const [uuidLoading, setUuidLoading] = useState(false);
 
-  const allFieldsEmpty = !urlInput && !currentFileName;
   const containerClass =
     "bg-slate-700 w-[700px] p-6 rounded-xl flex flex-col gap-4";
 
@@ -31,6 +32,24 @@ export default function Page() {
     } catch (error) {
       console.error("Error saving quiz:", error);
       setIsLoading(false);
+    }
+  }
+
+  async function handleUrlChange() {}
+
+  async function handleUrlSubmit() {
+    setUrlLoading(true);
+    try {
+      const response = await axios.post("/api/addQuiz", quizData);
+      const summary = response.data.summary;
+      const quiz = response.data.questions;
+      quizData.setSummary(summary);
+      quizData.setQuestions(quiz);
+      router.push(`/local/summary?uuid=${response.data.uuid}`);
+      setUrlLoading(false);
+    } catch (error) {
+      console.error("Error fetching URL:", error);
+      setUrlLoading(false);
     }
   }
 
@@ -72,6 +91,7 @@ export default function Page() {
         if (base64String) {
           // @ts-ignore
           const grouped_text_summary =
+          //@ts-ignore
             await window.pywebview.api.get_grouped_text(
               base64String,
               "pdf",
@@ -113,12 +133,12 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading || isParsingFile || allFieldsEmpty
+              isLoading || isParsingFile || !currentFileName
                 ? "bg-gray-400"
                 : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading || isParsingFile || allFieldsEmpty}
+            disabled={isLoading || isParsingFile || !currentFileName}
           >
             {isLoading ? "Loading..." : isParsingFile ? "Loading PDF..." : "Go"}
           </button>
@@ -134,7 +154,16 @@ export default function Page() {
               onChange={(e) => setUrlInput(e.target.value)}
               className="flex-1 text-black outline-0 py-2 px-4 rounded-xl truncate"
             />
+
+            <button
+              onClick={handleUrlSubmit}
+              disabled={isLoading || urlLoading}
+              className="py-2 px-4 bg-emerald-600 rounded-xl"
+            >
+              {urlLoading ? "Loading..." : "Submit"}
+            </button>
           </div>
+          {urlError && <p className="text-red-600 mt-2">{urlError}</p>}
         </div>
 
         <div className={containerClass}>
