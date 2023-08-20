@@ -5,8 +5,6 @@ import wave
 import time
 import audioop
 import math
-import numpy
-from threading import Thread
 from collections import deque
 import openai
 
@@ -45,26 +43,20 @@ class Api:
         data = self.wf.readframes(CHUNK)
 
         while data != b'' and not self.stop:
-            print("playing in loop")
             self.stream.write(data)
             data = self.wf.readframes(CHUNK)
 
         if not self.stop:
-            print("playing stop called")
             self.narrate_stop()
 
     def narrate_stop(self):
-        print("narrate stop called")
         self.stop = True
         if self.stream is not None:
-            print("stream stop called")
             self.stream.stop_stream()
             self.stream.close()
         if self.p is not None:
-            print("p terminate called")
             self.p.terminate()
         if self.wf is not None:
-            print("wf close called")
             self.wf.close()
 
     def azure_save_wav(self, summary):
@@ -99,7 +91,6 @@ class Api:
             print(f"Speech synthesis canceled: {cancellation_details}")
 
     def listening(self, threshold):
-        print("listening called")
         #self.stop = False
         p = pyaudio.PyAudio()
         stream = p.open(format=FORMAT,
@@ -141,9 +132,6 @@ class Api:
 
         stream.close()
         p.terminate()
-        # if not self.stop:
-        #     print("playing stop called in listening")
-        #     self.narrate_stop()
         return timed
 
     def save_record(self, data, p):
@@ -163,18 +151,14 @@ class Api:
             return transcript["text"]
 
     def question_set(self, quiz_set):
-        print("hello")
         question = quiz_set["question"]
         answers = quiz_set["options"]
         correct = quiz_set["answer"] + 1
 
-        print("question set")
         self.azure_speak(question)
-        print("questions asked")
         str_answer = ''
         for i in range(len(answers)):
             str_answer += str(i + 1) + " - " + answers[i] + ". "
-        print("answers asked")
         self.azure_speak(str_answer)
 
         timed_out = self.listening(self.threshold)
