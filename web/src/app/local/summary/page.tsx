@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { BackButton } from "@/components/BackButton";
 import { useCurrentQuiz } from "@/contexts/QuizContext";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,6 +14,7 @@ export default function Page() {
   const currentQuiz = useCurrentQuiz();
   const searchParams = useSearchParams();
   const search = searchParams?.get('uuid');
+  const [sliderValue, setSlidervalue] = useState(3);
 
   useEffect(() => {
     return () => {
@@ -23,6 +25,10 @@ export default function Page() {
       }
     }
   }, []);
+
+  function handleSliderChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setSlidervalue(parseInt(event.target.value));
+  }
 
   return (
     <div className="flex flex-1 bg-emerald-900 flex-col justify-center items-center gap-8">
@@ -38,10 +44,10 @@ export default function Page() {
           className="prose prose-invert leading-5 text-white marker:text-white m-12 mr-0"
           children={currentQuiz.summary} />
       </div>
-
+      
       <div className="flex gap-4">
         <button
-          className={`py-3 px-8 rounded-full font-semibold ${currentQuiz.audioMode ? "bg-green-600" : "bg-red-600"}`}
+          className={`py-3 px-8 rounded-3xl font-semibold ${currentQuiz.audioMode ? "bg-green-600" : "bg-red-600"}`}
           onClick={async () => {
             currentQuiz.setAudioMode(!currentQuiz.audioMode)
             // @ts-ignore
@@ -55,13 +61,31 @@ export default function Page() {
         >
           {currentQuiz.audioMode ? "Disable narration" : "Enable narration"}
         </button>
-
+        
+        <div className={`bg-black-600 py-3 px-8 rounded-full font-semibold`}>
+        <div className={`flex flex-col items-center gap-4 mb-4`}>
+        <label htmlFor="slider">Quiz Length: {sliderValue}</label>
+        <input 
+          type="range" 
+          id="slider" 
+          name="slider"
+          min="1" 
+          max="50"
+          value={sliderValue}
+          onChange={handleSliderChange}
+          className="slider"
+        />
+        </div>
         <button
           className="bg-sky-600 py-3 px-8 rounded-full font-semibold"
-          onClick={() => router.push("/local/quiz/1")}
+          onClick={() => {
+            
+            router.push("/local/quiz/1")
+          }}
         >
           I'm ready, quiz me!
         </button>
+      </div>
       </div>
     </div>
   )
