@@ -23,6 +23,15 @@ export default function Page() {
   const containerClass =
     "bg-slate-700 w-[700px] p-6 rounded-xl flex flex-col gap-4";
 
+  function isValidURL(string: string | URL) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+  }
+  
   async function handleGoClick() {
     setIsLoading(true);
     try {
@@ -39,10 +48,14 @@ export default function Page() {
   async function handleUrlChange(event: React.ChangeEvent<HTMLInputElement>) {
     const inputUrl = event.target.value;
     setUrlInput(inputUrl);
-    
   }
 
   async function handleUrlSubmit() {
+    if (!isValidURL(urlInput)) {
+      setUrlError("Please enter a valid URL.");
+      return;
+    }
+    
     setIsParsingUrl(true);
     //
 
@@ -103,6 +116,7 @@ export default function Page() {
         }
   
 
+    
     try {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);
@@ -152,7 +166,7 @@ export default function Page() {
         if (base64String) {
           // @ts-ignore
           const grouped_text_summary =
-          //@ts-ignore
+            //@ts-ignore
             await window.pywebview.api.get_grouped_text(
               base64String,
               "pdf",
@@ -187,9 +201,12 @@ export default function Page() {
       <div className="flex flex-col gap-8">
         <div className="flex flex-row justify-between">
           <div>
-            <h1>QuizCaster</h1>
+            <h1>
+              <span className="text-emerald-600">Quiz</span>
+              Caster
+            </h1>
             <p className="text-md font-extralight">
-              Your intelligent personal quiz assistant
+              Your intelligent personal quiz assistant.
             </p>
           </div>
           <button
@@ -206,7 +223,7 @@ export default function Page() {
         </div>
 
         <div className={containerClass}>
-          <h2>Start with a website:</h2>
+          <h2>Start with a website or YouTube link:</h2>
           <div className="flex gap-3">
             <input
               type="text"
@@ -219,11 +236,9 @@ export default function Page() {
 
             <button
               onClick={handleUrlSubmit}
-              disabled={isLoading || isParsingUrl }
+              disabled={isLoading || isParsingUrl}
               className={`py-2 px-4 ${
-                isParsingUrl
-                  ? "bg-gray-400"
-                  : "bg-emerald-600"
+                isParsingUrl ? "bg-gray-400" : "bg-emerald-600"
               } rounded-xl`}
             >
               {isParsingUrl ? "Loading..." : "Submit"}
@@ -233,7 +248,7 @@ export default function Page() {
         </div>
 
         <div className={containerClass}>
-          <h2>Or start with a file:</h2>
+          <h2>Upload a file:</h2>
           <input
             accept=".md, .pdf"
             type="file"
