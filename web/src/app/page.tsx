@@ -149,7 +149,7 @@ export default function Page() {
         </div>
 
         <div className={containerClass}>
-          <h2>Start with a website:</h2>
+          <h2>Start with a website or YouTube link:</h2>
           <div className="flex gap-3">
             <input
               type="text"
@@ -174,7 +174,7 @@ export default function Page() {
         </div>
 
         <div className={containerClass}>
-          <h2>Or start with a file:</h2>
+          <h2>Upload a file:</h2>
           <input
             accept=".md, .pdf"
             type="file"
