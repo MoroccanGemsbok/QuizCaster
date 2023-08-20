@@ -5,6 +5,7 @@ import openai
 from pprint import pprint
 from text_generation.preprocessing import replace_ligatures, remove_duplicates, remove_hyphens, to_lowercase, remove_newlines, split_into_sentences, group_sentences
 from text_generation.postprocessing import process_tf, scramble_answers
+from text_generation.youtube_processer import youtube_process
 import time
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -44,7 +45,7 @@ def summary_prompt(index, text, SUMMARY):
 
     response = openai.ChatCompletion.create(
         model="gpt-4",
-        max_tokens=100,
+        max_tokens=150,
         temperature=1.0,
         messages=messages)
     response_text = response.choices[0].message.content
@@ -61,7 +62,7 @@ def gpt_prompt(index, text, ALL_QUESTIONS):
 
     response = openai.ChatCompletion.create(
         model="gpt-4",
-        max_tokens=100,
+        max_tokens=150,
         temperature=1.2,
         messages=messages)
 
@@ -99,9 +100,8 @@ def pdf_preprocess(text: str, SENTENCES_PER_PROMPT) -> list[str]:
     return grouped_text
 
 
-def read_markdown(file_path: str) -> str:
-    with open(file_path, 'r', encoding='utf-8') as file:
-        markdown_content = file.read()
+def read_markdown(utf8_encoded_content: str) -> str:
+    markdown_content = utf8_encoded_content
     html_content = markdown.markdown(markdown_content)
     return html_content
 
@@ -113,12 +113,13 @@ def markdown_preprocess(text: list[str], SENTENCES_PER_PROMPT) -> list[str]:
     return text
 
 
-def process_html(html_content):
+def process_html(html_content, type):
     soup = BeautifulSoup(html_content, 'html.parser')
-    if TYPE == "website":
+    if type == "website":
         paragraphs = soup.find_all('p')
-    elif TYPE == "md":
+    elif type == "md":
         paragraphs = soup.find_all(['p', 'li'])
+    print(paragraphs)
     extracted_text = '\n'.join([p.get_text() for p in paragraphs])
     return extracted_text
 
@@ -129,12 +130,22 @@ def get_grouped_text(path: str, type: str, SENTENCES_PER_PROMPT) -> list[str]:
         text = read_pdf(path)
         grouped_text = pdf_preprocess(text, SENTENCES_PER_PROMPT)
     elif type == "md":
-        text = process_html(read_markdown(path)).splitlines()
+        print("path")
+        print(path)
+        markdown_content = read_markdown(path)
+        print("markdown_content")
+        print(markdown_content)
+        text = process_html(markdown_content, "md").splitlines()
+        print("text")
+        print(text)
         grouped_text = markdown_preprocess(text, SENTENCES_PER_PROMPT)
     elif type == "website":
         page = requests.get(path)
-        text = process_html(page.content).splitlines()
+        text = process_html(page.content, "website").splitlines()
         grouped_text = markdown_preprocess(text, SENTENCES_PER_PROMPT)
+    elif type == "youtube":
+        text = youtube_process(path)
+        grouped_text = group_sentences(text, SENTENCES_PER_PROMPT)
 
     print(grouped_text)
     return grouped_text

@@ -8,3 +8,5 @@ numpy~=1.24.3
 markdown
 bs4
 PyPDF2
+joblib
+youtube_transcript_api
