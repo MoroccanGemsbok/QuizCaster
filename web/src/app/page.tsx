@@ -64,20 +64,16 @@ export default function Page() {
         setIsParsingPDF(true);
         if (base64String) {
           // @ts-ignore
-          const grouped_text = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
+          const grouped_text_summary = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
           // @ts-ignore
-          const summary = await window.pywebview.api.return_summary(grouped_text);
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(base64String, "pdf", 5);
           // @ts-ignore
-          const quiz = await window.pywebview.api.return_quiz(grouped_text);
+          const summary = await window.pywebview.api.return_summary(grouped_text_summary);
+          // @ts-ignore
+          const quiz = await window.pywebview.api.return_quiz(grouped_text_quiz);
 
           quizData.setSummary(summary);
           quizData.setQuestions(quiz);
-          console.log("summary:");
-          console.log(summary);
-          console.log("quiz:");
-          console.log(quiz);
-
-          console.log("andy");
           setIsParsingPDF(false);
         }
       };
