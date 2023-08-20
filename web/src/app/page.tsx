@@ -42,7 +42,7 @@ export default function Page() {
     setUuidLoading(true);
     try {
       const response = await axios.get(`/api/checkUuid?uuid=${uuidSearch}`);
-      
+
       if (response.data.exists) {
         const summary = response.data.summary;
         const quiz = response.data.questions;
@@ -66,26 +66,36 @@ export default function Page() {
     if (selectedFile) {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
-      reader.onload = async(event: ProgressEvent<FileReader>) => {
-        const base64String = event.target?.result?.toString()?.split(',')[1];
+      reader.onload = async (event: ProgressEvent<FileReader>) => {
+        const base64String = event.target?.result?.toString()?.split(",")[1];
         setIsParsingFile(true);
         if (base64String) {
           // @ts-ignore
-          const grouped_text_summary = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
+          const grouped_text_summary =
+            await window.pywebview.api.get_grouped_text(
+              base64String,
+              "pdf",
+              50
+            );
           // @ts-ignore
-          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(base64String, "pdf", 5);
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
+            base64String,
+            "pdf",
+            5
+          );
           // @ts-ignore
           const summary = await window.pywebview.api.return_summary(
             grouped_text_summary
           );
           // @ts-ignore
-          const quiz = await window.pywebview.api.return_quiz(grouped_text_quiz);
+          const quiz = await window.pywebview.api.return_quiz(
+            grouped_text_quiz
+          );
 
           quizData.setSummary(summary);
           quizData.setQuestions(quiz);
           setIsParsingFile(false);
         }
-
       };
       reader.readAsDataURL(selectedFile);
     }
@@ -103,12 +113,14 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading || isParsingFile ? "bg-gray-400" : "bg-emerald-600"
+              isLoading || isParsingFile || allFieldsEmpty
+                ? "bg-gray-400"
+                : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
             disabled={isLoading || isParsingFile || allFieldsEmpty}
           >
-            {isLoading ? "Loading..." : isParsingFile ? "Loading file..." : "Go"}
+            {isLoading ? "Loading..." : isParsingFile ? "Loading PDF..." : "Go"}
           </button>
         </div>
 
@@ -154,7 +166,7 @@ export default function Page() {
         <div className={containerClass}>
           <h2>Search with a Task ID:</h2>
           <div className="flex gap-3">
-          <input
+            <input
               type="text"
               value={uuidSearch}
               onChange={handleUuidChange}
