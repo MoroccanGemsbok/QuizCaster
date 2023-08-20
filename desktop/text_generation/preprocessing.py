@@ -22,6 +22,7 @@ def replace_ligatures(text: str) -> str:
 def remove_close_periods(input_string):
     pattern = r'\.(.{0,40}\.)'
     result = re.sub(pattern, r'\1', input_string)
+    print(result)
     return result
 
 
@@ -142,17 +143,6 @@ def remove_duplicates(lst):
 
 
 def group_sentences(sentences: List[str], sentences_per_prompt: int) -> List[str]:
-    """
-    Group sentences into prompts.
-
-    :param sentences: list of sentences
-    :type sentences: List[str]
-    :param sentences_per_prompt: number of sentences per prompt
-    :type sentences_per_prompt: int
-
-    :return: list of prompts
-    :rtype: List[str]
-    """
     prompts = []
     for i in range(0, len(sentences), sentences_per_prompt):
         prompts.append(" ".join(sentences[i:i + sentences_per_prompt]))

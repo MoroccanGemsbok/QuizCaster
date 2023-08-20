@@ -164,11 +164,10 @@ class Api:
         answers = quiz_set["options"]
         correct = quiz_set["answer"] + 1
 
-        self.azure_speak(question)
         str_answer = ''
         for i in range(len(answers)):
-            str_answer += str(i + 1) + " - " + answers[i] + ". "
-        self.azure_speak(str_answer)
+            str_answer += str(i + 1) + ". " + answers[i] + ". "
+        self.azure_speak(question + " " + str_answer)
 
         timed_out = self.listening(self.threshold)
 

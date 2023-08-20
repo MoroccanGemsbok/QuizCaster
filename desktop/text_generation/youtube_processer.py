@@ -1,12 +1,24 @@
 from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api.formatters import TextFormatter
+from youtube_transcript_api.formatters import Formatter
 import joblib
+
+
+class StringFormatter(Formatter):
+    def format_transcript(self, transcript, **kwargs):
+        combined_text = ' '.join(item["text"] for item in transcript)
+        return combined_text.replace('\n', ' ')
+
+    def format_transcripts(self, transcripts, **kwargs):
+        combined_text = ''
+        for transcript in transcripts:
+            combined_text += '. '.join(item["text"] for item in transcript) + ' '
+        return combined_text.strip()
 
 
 def get_transcript(yt_id):
     try:
         transcript = YouTubeTranscriptApi.get_transcript(yt_id)
-        formatter = TextFormatter()
+        formatter = StringFormatter()
         text = formatter.format_transcript(transcript)
         return text
     except Exception as e:
@@ -39,6 +51,6 @@ def naive_bayes(model, vectorizer, text):
 def youtube_process(yt_id):
     # Youtube ID (Replace with your own)
     text = get_transcript(yt_id)
-    corrected_text = naive_bayes('naive_bayes_model.joblib', 'vectorizer.joblib', text)
+    corrected_text = naive_bayes('text_generation/naive_bayes_model.joblib', 'text_generation/vectorizer.joblib', text)
     return corrected_text
 

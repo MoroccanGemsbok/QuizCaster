@@ -44,6 +44,65 @@ export default function Page() {
 
   async function handleUrlSubmit() {
     setIsParsingUrl(true);
+    //
+
+    const link = urlInput;
+
+        if (link.includes("youtube")) {
+          const youtube_id = link.split("v=")[1];
+          // @ts-ignore
+          const grouped_text_summary =
+          //@ts-ignore
+            await window.pywebview.api.get_grouped_text(
+              youtube_id,
+              "youtube",
+              50
+            );
+          // @ts-ignore
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
+            youtube_id,
+            "youtube",
+            5
+          );
+          // @ts-ignore
+          const summary = await window.pywebview.api.return_summary(
+            grouped_text_summary
+          );
+          // @ts-ignore
+          const quiz = await window.pywebview.api.return_quiz(
+            grouped_text_quiz
+          );
+
+          quizData.setSummary(summary);
+          quizData.setQuestions(quiz);
+        } else {
+          const grouped_text_summary =
+          //@ts-ignore
+            await window.pywebview.api.get_grouped_text(
+              link,
+              "website",
+              50
+            );
+          // @ts-ignore
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
+            link,
+            "website",
+            5
+          );
+          // @ts-ignore
+          const summary = await window.pywebview.api.return_summary(
+            grouped_text_summary
+          );
+          // @ts-ignore
+          const quiz = await window.pywebview.api.return_quiz(
+            grouped_text_quiz
+          );
+
+          quizData.setSummary(summary);
+          quizData.setQuestions(quiz);
+        }
+  
+
     try {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);

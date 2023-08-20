@@ -141,7 +141,8 @@ def get_grouped_text(path: str, type: str, SENTENCES_PER_PROMPT) -> list[str]:
         text = youtube_process(path)
         text = remove_close_periods(text)
         text = remove_close_periods(text)
-        grouped_text = group_sentences(text, SENTENCES_PER_PROMPT)
+        text = remove_newlines(text)
+        grouped_text = group_sentences(split_into_sentences(text), SENTENCES_PER_PROMPT)
 
     return grouped_text
 
