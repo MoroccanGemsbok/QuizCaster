@@ -10,11 +10,12 @@ export default function Page() {
   const [currentFileName, setCurrentFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isParsingFile, setIsParsingFile] = useState(false);
+  const [isParsingUrl, setIsParsingUrl] = useState(false);
   const quizData = useCurrentQuiz();
   const router = useRouter();
   const [urlInput, setUrlInput] = useState("");
   const [urlError, setUrlError] = useState<string | null>(null);
-  const [urlLoading, setUrlLoading] = useState(false);
+  const [urlValid, setUrlValid] = useState(false);
   const [uuidSearch, setUuidSearch] = useState("");
   const [uuidError, setUuidError] = useState<string | null>(null);
   const [uuidLoading, setUuidLoading] = useState(false);
@@ -36,23 +37,60 @@ export default function Page() {
   }
 
   async function handleUrlChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setUrlInput(event.target.value);
+    const inputUrl = event.target.value;
+    setUrlInput(inputUrl);
+    setIsParsingUrl(true);
+    try {
+      new URL(inputUrl);
+      setUrlValid(true);
+    } catch (error) {
+      setUrlValid(false);
+    }
+    if (urlInput.includes("www")) {
+      const link = urlInput;
+      if (link.includes("youtube")) {
+        const videoId = link.split("v=")[1];
+              // @ts-ignore
+              const grouped_text_summary =
+              //@ts-ignore
+                await window.pywebview.api.get_grouped_text(
+                  videoId,
+                  "youtube",
+                  50
+                );
+              // @ts-ignore
+              const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
+                videoId,
+                "youtube",
+                5
+              );
+              // @ts-ignore
+              const summary = await window.pywebview.api.return_summary(
+                grouped_text_summary
+              );
+              // @ts-ignore
+              const quiz = await window.pywebview.api.return_quiz(
+                grouped_text_quiz
+              );
+    
+              quizData.setSummary(summary);
+              quizData.setQuestions(quiz);
+              setIsParsingUrl(false);
+
+      }
+    }
   }
 
   async function handleUrlSubmit() {
-    setUrlLoading(true);
+    setIsParsingUrl(true);
     try {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);
-      const summary = response.data.summary;
-      const quiz = response.data.questions;
-      quizData.setSummary(summary);
-      quizData.setQuestions(quiz);
       router.push(`/local/summary?uuid=${response.data.uuid}`);
-      setUrlLoading(false);
+      setIsParsingUrl(false);
     } catch (error) {
-      console.error("Error fetching URL:", error);
-      setUrlLoading(false);
+      console.error("Error saving quiz:", error);
+      setIsParsingUrl(false);
     }
   }
 
@@ -154,16 +192,21 @@ export default function Page() {
               type="text"
               placeholder="https://"
               value={urlInput}
+              disabled={isParsingUrl && urlValid}
               onChange={handleUrlChange}
               className="flex-1 text-black outline-0 py-2 px-4 rounded-xl truncate"
             />
 
             <button
               onClick={handleUrlSubmit}
-              disabled={isLoading || urlLoading}
-              className="py-2 px-4 bg-emerald-600 rounded-xl"
+              disabled={isLoading || isParsingUrl }
+              className={`py-2 px-4 ${
+                isParsingUrl && urlValid
+                  ? "bg-gray-400"
+                  : "bg-emerald-600"
+              } rounded-xl`}
             >
-              {urlLoading ? "Loading..." : "Submit"}
+              {isParsingUrl && urlValid ? "Loading..." : "Submit"}
             </button>
           </div>
           {urlError && <p className="text-red-600 mt-2">{urlError}</p>}
