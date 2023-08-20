@@ -39,46 +39,7 @@ export default function Page() {
   async function handleUrlChange(event: React.ChangeEvent<HTMLInputElement>) {
     const inputUrl = event.target.value;
     setUrlInput(inputUrl);
-    setIsParsingUrl(true);
-    try {
-      new URL(inputUrl);
-      setUrlValid(true);
-    } catch (error) {
-      setUrlValid(false);
-    }
-    if (urlInput.includes("www")) {
-      const link = urlInput;
-      if (link.includes("youtube")) {
-        const videoId = link.split("v=")[1];
-              // @ts-ignore
-              const grouped_text_summary =
-              //@ts-ignore
-                await window.pywebview.api.get_grouped_text(
-                  videoId,
-                  "youtube",
-                  50
-                );
-              // @ts-ignore
-              const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
-                videoId,
-                "youtube",
-                5
-              );
-              // @ts-ignore
-              const summary = await window.pywebview.api.return_summary(
-                grouped_text_summary
-              );
-              // @ts-ignore
-              const quiz = await window.pywebview.api.return_quiz(
-                grouped_text_quiz
-              );
     
-              quizData.setSummary(summary);
-              quizData.setQuestions(quiz);
-              setIsParsingUrl(false);
-
-      }
-    }
   }
 
   async function handleUrlSubmit() {
@@ -192,7 +153,7 @@ export default function Page() {
               type="text"
               placeholder="https://"
               value={urlInput}
-              disabled={isParsingUrl && urlValid}
+              disabled={isParsingUrl}
               onChange={handleUrlChange}
               className="flex-1 text-black outline-0 py-2 px-4 rounded-xl truncate"
             />
@@ -201,12 +162,12 @@ export default function Page() {
               onClick={handleUrlSubmit}
               disabled={isLoading || isParsingUrl }
               className={`py-2 px-4 ${
-                isParsingUrl && urlValid
+                isParsingUrl
                   ? "bg-gray-400"
                   : "bg-emerald-600"
               } rounded-xl`}
             >
-              {isParsingUrl && urlValid ? "Loading..." : "Submit"}
+              {isParsingUrl ? "Loading..." : "Submit"}
             </button>
           </div>
           {urlError && <p className="text-red-600 mt-2">{urlError}</p>}
