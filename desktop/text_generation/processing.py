@@ -119,7 +119,6 @@ def process_html(html_content, type):
         paragraphs = soup.find_all('p')
     elif type == "md":
         paragraphs = soup.find_all(['p', 'li'])
-    print(paragraphs)
     extracted_text = '\n'.join([p.get_text() for p in paragraphs])
     return extracted_text
 
@@ -156,7 +155,6 @@ def get_summary(grouped_text) -> list[str]:
         results = executor.map(partial_func, text_range)
 
     SUMMARY = ' '.join(SUMMARY)
-    print(SUMMARY)
     return SUMMARY
 
 
@@ -167,5 +165,6 @@ def get_questions(grouped_text) -> list[dict]:
         partial_func = partial(gpt_prompt, text=grouped_text, ALL_QUESTIONS=ALL_QUESTIONS)
         results = executor.map(partial_func, text_range)
 
-    print(ALL_QUESTIONS)
+    print("Question count: ")
+    print(ALL_QUESTIONS.length)
     return ALL_QUESTIONS
