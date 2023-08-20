@@ -87,7 +87,7 @@ export default function Page({ params }: Params) {
                 setAnswer(index);
                 setState("Answer");
               }}>
-              <p className="text-2xl p-8">
+              <p className="text-2xl p-8 capitalize">
                 {option}
               </p>
             </div>

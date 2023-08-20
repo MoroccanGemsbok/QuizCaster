@@ -9,7 +9,7 @@ import { useState } from "react";
 export default function Page() {
   const [currentFileName, setCurrentFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isParsingPDF, setIsParsingPDF] = useState(false);
+  const [isParsingFile, setIsParsingFile] = useState(false);
   const quizData = useCurrentQuiz();
   const router = useRouter();
   const [urlInput, setUrlInput] = useState("");
@@ -27,6 +27,7 @@ export default function Page() {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);
       router.push(`/local/summary?uuid=${response.data.uuid}`);
+      router.push(`/local/summary?uuid=${response.data.uuid}`);
       setIsLoading(false);
     } catch (error) {
       console.error("Error saving quiz:", error);
@@ -42,7 +43,7 @@ export default function Page() {
     setUuidLoading(true);
     try {
       const response = await axios.get(`/api/checkUuid?uuid=${uuidSearch}`);
-      console.log(response);
+      
       if (response.data.exists) {
         const summary = response.data.summary;
         const quiz = response.data.questions;
@@ -66,36 +67,26 @@ export default function Page() {
     if (selectedFile) {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
-      reader.onload = async (event: ProgressEvent<FileReader>) => {
-        const base64String = event.target?.result?.toString()?.split(",")[1];
+      reader.onload = async(event: ProgressEvent<FileReader>) => {
+        const base64String = event.target?.result?.toString()?.split(',')[1];
         setIsParsingPDF(true);
         if (base64String) {
           // @ts-ignore
-          const grouped_text_summary =
-            await window.pywebview.api.get_grouped_text(
-              base64String,
-              "pdf",
-              50
-            );
+          const grouped_text_summary = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
           // @ts-ignore
-          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
-            base64String,
-            "pdf",
-            5
-          );
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(base64String, "pdf", 5);
           // @ts-ignore
           const summary = await window.pywebview.api.return_summary(
             grouped_text_summary
           );
           // @ts-ignore
-          const quiz = await window.pywebview.api.return_quiz(
-            grouped_text_quiz
-          );
+          const quiz = await window.pywebview.api.return_quiz(grouped_text_quiz);
 
           quizData.setSummary(summary);
           quizData.setQuestions(quiz);
-          setIsParsingPDF(false);
+          setIsParsingFile(false);
         }
+
       };
       reader.readAsDataURL(selectedFile);
     }
@@ -113,14 +104,12 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading || isParsingPDF || allFieldsEmpty
-                ? "bg-gray-400"
-                : "bg-emerald-600"
+              isLoading || isParsingPDF ? "bg-gray-400" : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading || isParsingPDF || allFieldsEmpty}
+            disabled={isLoading || isParsingPDF}
           >
-            {isLoading ? "Loading..." : isParsingPDF ? "Loading PDF..." : "Go"}
+            {isLoading ? "Loading..." : isParsingFile ? "Loading file..." : "Go"}
           </button>
         </div>
 
@@ -140,7 +129,7 @@ export default function Page() {
         <div className={containerClass}>
           <h2>Or start with a file:</h2>
           <input
-            accept=".md, .txt, .pdf"
+            accept=".md, .pdf"
             type="file"
             id="fileInput"
             onChange={handleFileChange}
@@ -151,7 +140,7 @@ export default function Page() {
             className="bg-slate-600 rounded-xl h-36 cursor-pointer flex flex-col justify-center items-center
                       text-slate-400"
           >
-            <p>Click to select a markdown, text, or PDF file (md, txt, pdf)</p>
+            <p>Click to select a markdown or PDF file (md, pdf)</p>
             <p>
               Selected file:{" "}
               <span className="font-semibold text-slate-300">
