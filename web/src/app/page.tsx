@@ -106,7 +106,7 @@ export default function Page() {
               isLoading || isParsingFile ? "bg-gray-400" : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading || isParsingFile}
+            disabled={isLoading || isParsingFile || allFieldsEmpty}
           >
             {isLoading ? "Loading..." : isParsingFile ? "Loading file..." : "Go"}
           </button>
