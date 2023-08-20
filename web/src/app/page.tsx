@@ -39,7 +39,6 @@ export default function Page() {
   async function handleUrlChange(event: React.ChangeEvent<HTMLInputElement>) {
     const inputUrl = event.target.value;
     setUrlInput(inputUrl);
-    
   }
 
   async function handleUrlSubmit() {
@@ -93,7 +92,7 @@ export default function Page() {
         if (base64String) {
           // @ts-ignore
           const grouped_text_summary =
-          //@ts-ignore
+            //@ts-ignore
             await window.pywebview.api.get_grouped_text(
               base64String,
               "pdf",
@@ -128,9 +127,12 @@ export default function Page() {
       <div className="flex flex-col gap-8">
         <div className="flex flex-row justify-between">
           <div>
-            <h1>QuizCaster</h1>
+            <h1>
+              <span className="text-emerald-600">Quiz</span>
+              Caster
+            </h1>
             <p className="text-md font-extralight">
-              Your intelligent personal quiz assistant
+              Your intelligent personal quiz assistant.
             </p>
           </div>
           <button
@@ -160,11 +162,9 @@ export default function Page() {
 
             <button
               onClick={handleUrlSubmit}
-              disabled={isLoading || isParsingUrl }
+              disabled={isLoading || isParsingUrl}
               className={`py-2 px-4 ${
-                isParsingUrl
-                  ? "bg-gray-400"
-                  : "bg-emerald-600"
+                isParsingUrl ? "bg-gray-400" : "bg-emerald-600"
               } rounded-xl`}
             >
               {isParsingUrl ? "Loading..." : "Submit"}
