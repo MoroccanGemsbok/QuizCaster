@@ -25,9 +25,11 @@ export default function Page({ params }: Params) {
 
   useEffect(() => {
     const onStateChange = async () => {
-      const res = await window.pywebview.api.continue_screen();
-      if (res) {
-        router.push(isLastQuestion ? "/" : `/local/quiz/${questionNumber + 1}`)
+      if (currentQuiz.audioMode) {
+        const res = await window.pywebview.api.continue_screen();
+        if (res) {
+          router.push(isLastQuestion ? "/" : `/local/quiz/${questionNumber + 1}`)
+        }
       }
     }
     if (state === "Answer") {

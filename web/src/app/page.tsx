@@ -161,21 +161,28 @@ export default function Page() {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
       reader.onload = async (event: ProgressEvent<FileReader>) => {
-        const base64String = event.target?.result?.toString()?.split(",")[1];
+        let rawData;
+        const nameParts = selectedFile.name.split(".");
+        const extension = nameParts[nameParts.length - 1];
+        if (extension === "pdf") {
+          rawData = event.target?.result?.toString()?.split(",")[1];
+        } else {
+          rawData = await selectedFile.text()
+        }
         setIsParsingFile(true);
-        if (base64String) {
+        if (rawData) {
           // @ts-ignore
           const grouped_text_summary =
             //@ts-ignore
             await window.pywebview.api.get_grouped_text(
-              base64String,
-              "pdf",
+              rawData,
+              extension,
               50
             );
           // @ts-ignore
           const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
-            base64String,
-            "pdf",
+            rawData,
+            extension,
             5
           );
           // @ts-ignore
