@@ -151,6 +151,15 @@ class Api:
             transcript = openai.Audio.transcribe("whisper-1", audio_file)
             return transcript["text"]
 
+    def continue_screen(self):
+        self.azure_speak("Continue?")
+        timed_out = self.listening(self.threshold)
+        if timed_out is True:
+            self.azure_speak("Goodbye.")
+            return False
+        else:
+            return True
+
     def question_set(self, quiz_set):
         question = quiz_set["question"]
         answers = quiz_set["options"]
