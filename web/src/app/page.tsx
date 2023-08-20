@@ -23,6 +23,15 @@ export default function Page() {
   const containerClass =
     "bg-slate-700 w-[700px] p-6 rounded-xl flex flex-col gap-4";
 
+  function isValidURL(string: string | URL) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+  }
+  
   async function handleGoClick() {
     setIsLoading(true);
     try {
@@ -42,7 +51,13 @@ export default function Page() {
   }
 
   async function handleUrlSubmit() {
+    if (!isValidURL(urlInput)) {
+      setUrlError("Please enter a valid URL.");
+      return;
+    }
+    
     setIsParsingUrl(true);
+    
     try {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);
