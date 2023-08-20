@@ -41,7 +41,7 @@ export default function Page() {
         <button
           onClick={() => {
             const tempInput = document.createElement('textarea');
-            tempInput.value = search
+            tempInput.value = search || ""
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');

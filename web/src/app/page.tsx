@@ -12,10 +12,12 @@ export default function Page() {
   const [isParsingPDF, setIsParsingPDF] = useState(false);
   const quizData = useCurrentQuiz();
   const router = useRouter();
+  const [urlInput, setUrlInput] = useState("");
   const [uuidSearch, setUuidSearch] = useState("");
   const [uuidError, setUuidError] = useState<string | null>(null);
   const [uuidLoading, setUuidLoading] = useState(false);
 
+  const allFieldsEmpty = !urlInput && !currentFileName;
   const containerClass =
     "bg-slate-700 w-[700px] p-6 rounded-xl flex flex-col gap-4";
 
@@ -24,7 +26,7 @@ export default function Page() {
     try {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);
-      router.push(`/local/summary?uuid=${response.data.uuid}`); 
+      router.push(`/local/summary?uuid=${response.data.uuid}`);
       setIsLoading(false);
     } catch (error) {
       console.error("Error saving quiz:", error);
@@ -35,13 +37,18 @@ export default function Page() {
   function handleUuidChange(event: React.ChangeEvent<HTMLInputElement>) {
     setUuidSearch(event.target.value);
   }
-  
+
   async function handleUuidSubmit() {
     setUuidLoading(true);
     try {
       const response = await axios.get(`/api/checkUuid?uuid=${uuidSearch}`);
-      
+      console.log(response);
       if (response.data.exists) {
+        const summary = response.data.summary;
+        const quiz = response.data.questions;
+        quizData.setSummary(summary);
+        quizData.setQuestions(quiz);
+
         router.push(`/local/summary?uuid=${uuidSearch}`);
       } else {
         setUuidError("This task does not exist. Please try again.");
@@ -53,24 +60,37 @@ export default function Page() {
       setUuidLoading(false);
     }
   }
-  
+
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
-      reader.onload = async(event: ProgressEvent<FileReader>) => {
-        const base64String = event.target?.result?.toString()?.split(',')[1];
+      reader.onload = async (event: ProgressEvent<FileReader>) => {
+        const base64String = event.target?.result?.toString()?.split(",")[1];
         setIsParsingPDF(true);
         if (base64String) {
           // @ts-ignore
-          const grouped_text_summary = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
+          const grouped_text_summary =
+            await window.pywebview.api.get_grouped_text(
+              base64String,
+              "pdf",
+              50
+            );
           // @ts-ignore
-          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(base64String, "pdf", 5);
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
+            base64String,
+            "pdf",
+            5
+          );
           // @ts-ignore
-          const summary = await window.pywebview.api.return_summary(grouped_text_summary);
+          const summary = await window.pywebview.api.return_summary(
+            grouped_text_summary
+          );
           // @ts-ignore
-          const quiz = await window.pywebview.api.return_quiz(grouped_text_quiz);
+          const quiz = await window.pywebview.api.return_quiz(
+            grouped_text_quiz
+          );
 
           quizData.setSummary(summary);
           quizData.setQuestions(quiz);
@@ -80,8 +100,6 @@ export default function Page() {
       reader.readAsDataURL(selectedFile);
     }
   }
-
-
 
   return (
     <div className="flex flex-1 bg-slate-800 justify-center items-center">
@@ -95,10 +113,12 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading || isParsingPDF ? "bg-gray-400" : "bg-emerald-600"
+              isLoading || isParsingPDF || allFieldsEmpty
+                ? "bg-gray-400"
+                : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading || isParsingPDF}
+            disabled={isLoading || isParsingPDF || allFieldsEmpty}
           >
             {isLoading ? "Loading..." : isParsingPDF ? "Loading PDF..." : "Go"}
           </button>
@@ -110,6 +130,8 @@ export default function Page() {
             <input
               type="text"
               placeholder="https://"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
               className="flex-1 text-black outline-0 py-2 px-4 rounded-xl truncate"
             />
           </div>
@@ -144,7 +166,7 @@ export default function Page() {
         <div className={containerClass}>
           <h2>Search with a Task ID:</h2>
           <div className="flex gap-3">
-            <input
+          <input
               type="text"
               value={uuidSearch}
               onChange={handleUuidChange}
@@ -153,7 +175,7 @@ export default function Page() {
             />
             <button
               onClick={handleUuidSubmit}
-              disabled={isLoading}
+              disabled={isLoading || uuidLoading}
               className="py-2 px-4 bg-emerald-600 rounded-xl"
             >
               {uuidLoading ? "Loading..." : "Submit"}
