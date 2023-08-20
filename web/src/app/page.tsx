@@ -86,8 +86,8 @@ export default function Page() {
             grouped_text_quiz
           );
 
-          quizData.setSummary(summary);
-          quizData.setQuestions(quiz);
+          await quizData.setSummary(summary);
+          await quizData.setQuestions(quiz);
         } else {
           const grouped_text_summary =
           //@ts-ignore
@@ -111,15 +111,15 @@ export default function Page() {
             grouped_text_quiz
           );
 
-          quizData.setSummary(summary);
-          quizData.setQuestions(quiz);
+          await quizData.setSummary(summary);
+          await quizData.setQuestions(quiz);
         }
   
 
     
     try {
       const response = await axios.post("/api/addQuiz", quizData);
-      console.log(response.data.uuid);
+      console.log(response.data);
       router.push(`/local/summary?uuid=${response.data.uuid}`);
       setIsParsingUrl(false);
     } catch (error) {
