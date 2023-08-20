@@ -92,9 +92,11 @@ export default function Page() {
         <button
           className="bg-sky-600 py-3 px-8 rounded-full font-semibold"
           onClick={() => {
+            const shuffle = require('shuffle-array'), shuffledQuestions=questions;
+            shuffle(shuffledQuestions);
             const truncatedQuestions = questions.slice(0, sliderValue);
-            setQuestions(truncatedQuestions);
-            console.log("truncated questions", truncatedQuestions);
+            currentQuiz.setQuestions(truncatedQuestions);
+            console.log("Question List", truncatedQuestions);
             router.push("/local/quiz/1")
           }}
         >

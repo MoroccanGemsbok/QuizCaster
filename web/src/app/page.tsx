@@ -41,6 +41,7 @@ export default function Page() {
     setUrlLoading(true);
     try {
       const response = await axios.post("/api/addQuiz", quizData);
+      console.log(response.data.uuid);
       const summary = response.data.summary;
       const quiz = response.data.questions;
       quizData.setSummary(summary);
