@@ -140,8 +140,8 @@ export default function Page() {
       if (response.data.exists) {
         const summary = response.data.summary;
         const quiz = response.data.questions;
-        quizData.setSummary(summary);
-        quizData.setQuestions(quiz);
+        await quizData.setSummary(summary);
+        await quizData.setQuestions(quiz);
 
         router.push(`/local/summary?uuid=${uuidSearch}`);
       } else {
@@ -187,8 +187,8 @@ export default function Page() {
             grouped_text_quiz
           );
 
-          quizData.setSummary(summary);
-          quizData.setQuestions(quiz);
+          await quizData.setSummary(summary);
+          await quizData.setQuestions(quiz);
           setIsParsingFile(false);
         }
       };
