@@ -166,5 +166,5 @@ def get_questions(grouped_text) -> list[dict]:
         results = executor.map(partial_func, text_range)
 
     print("Question count: ")
-    print(ALL_QUESTIONS.length)
+    print(len(ALL_QUESTIONS))
     return ALL_QUESTIONS
