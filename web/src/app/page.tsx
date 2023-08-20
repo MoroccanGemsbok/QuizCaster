@@ -12,6 +12,9 @@ export default function Page() {
   const [isParsingFile, setIsParsingFile] = useState(false);
   const quizData = useCurrentQuiz();
   const router = useRouter();
+  const [urlInput, setUrlInput] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const [urlLoading, setUrlLoading] = useState(false);
   const [uuidSearch, setUuidSearch] = useState("");
   const [uuidError, setUuidError] = useState<string | null>(null);
   const [uuidLoading, setUuidLoading] = useState(false);
@@ -32,6 +35,24 @@ export default function Page() {
     }
   }
 
+  async function handleUrlChange() {}
+
+  async function handleUrlSubmit() {
+    setUrlLoading(true);
+    try {
+      const response = await axios.post("/api/addQuiz", quizData);
+      const summary = response.data.summary;
+      const quiz = response.data.questions;
+      quizData.setSummary(summary);
+      quizData.setQuestions(quiz);
+      router.push(`/local/summary?uuid=${response.data.uuid}`);
+      setUrlLoading(false);
+    } catch (error) {
+      console.error("Error fetching URL:", error);
+      setUrlLoading(false);
+    }
+  }
+
   function handleUuidChange(event: React.ChangeEvent<HTMLInputElement>) {
     setUuidSearch(event.target.value);
   }
@@ -42,6 +63,11 @@ export default function Page() {
       const response = await axios.get(`/api/checkUuid?uuid=${uuidSearch}`);
 
       if (response.data.exists) {
+        const summary = response.data.summary;
+        const quiz = response.data.questions;
+        quizData.setSummary(summary);
+        quizData.setQuestions(quiz);
+
         router.push(`/local/summary?uuid=${uuidSearch}`);
       } else {
         setUuidError("This task does not exist. Please try again.");
@@ -59,30 +85,37 @@ export default function Page() {
     if (selectedFile) {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
-      reader.onload = async(event: ProgressEvent<FileReader>) => {
-        const exts = selectedFile.name.split('.')
-        const filetype = exts[exts.length - 1]
-        let rawString;
+      reader.onload = async (event: ProgressEvent<FileReader>) => {
+        const base64String = event.target?.result?.toString()?.split(",")[1];
         setIsParsingFile(true);
-        if (filetype === "pdf") {
-          rawString = event.target?.result?.toString()?.split(',')[1];
-        } else if (filetype === "md") {
-          rawString = await selectedFile.text();
-        }
-        if (rawString) {
+        if (base64String) {
           // @ts-ignore
-          const grouped_text_summary = await window.pywebview.api.get_grouped_text(rawString, filetype, 50);
+          const grouped_text_summary =
+          //@ts-ignore
+            await window.pywebview.api.get_grouped_text(
+              base64String,
+              "pdf",
+              50
+            );
           // @ts-ignore
-          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(rawString, filetype, 5);
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(
+            base64String,
+            "pdf",
+            5
+          );
           // @ts-ignore
-          const summary = await window.pywebview.api.return_summary(grouped_text_summary);
+          const summary = await window.pywebview.api.return_summary(
+            grouped_text_summary
+          );
           // @ts-ignore
-          const quiz = await window.pywebview.api.return_quiz(grouped_text_quiz);
+          const quiz = await window.pywebview.api.return_quiz(
+            grouped_text_quiz
+          );
+
           quizData.setSummary(summary);
           quizData.setQuestions(quiz);
           setIsParsingFile(false);
         }
-
       };
       reader.readAsDataURL(selectedFile);
     }
@@ -100,12 +133,14 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading || isParsingFile ? "bg-gray-400" : "bg-emerald-600"
+              isLoading || isParsingFile || !currentFileName
+                ? "bg-gray-400"
+                : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading || isParsingFile}
+            disabled={isLoading || isParsingFile || !currentFileName}
           >
-            {isLoading ? "Loading..." : isParsingFile ? "Loading file..." : "Go"}
+            {isLoading ? "Loading..." : isParsingFile ? "Loading PDF..." : "Go"}
           </button>
         </div>
 
@@ -115,9 +150,20 @@ export default function Page() {
             <input
               type="text"
               placeholder="https://"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
               className="flex-1 text-black outline-0 py-2 px-4 rounded-xl truncate"
             />
+
+            <button
+              onClick={handleUrlSubmit}
+              disabled={isLoading || urlLoading}
+              className="py-2 px-4 bg-emerald-600 rounded-xl"
+            >
+              {urlLoading ? "Loading..." : "Submit"}
+            </button>
           </div>
+          {urlError && <p className="text-red-600 mt-2">{urlError}</p>}
         </div>
 
         <div className={containerClass}>
@@ -158,7 +204,7 @@ export default function Page() {
             />
             <button
               onClick={handleUuidSubmit}
-              disabled={isLoading}
+              disabled={isLoading || uuidLoading}
               className="py-2 px-4 bg-emerald-600 rounded-xl"
             >
               {uuidLoading ? "Loading..." : "Submit"}

@@ -36,7 +36,10 @@ export default async function handler(req, res) {
     const document = await collection.findOne({ _id: uuid });
 
     if (document) {
-      res.status(200).json({ exists: true });
+      res.status(200).json({ summary: document.summary,
+         questions: document.questions,
+         answers: document.answers,
+         exists: true });
     } else {
       res.status(200).json({ exists: false });
     }
