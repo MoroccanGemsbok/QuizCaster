@@ -35,7 +35,9 @@ export default function Page() {
     }
   }
 
-  async function handleUrlChange() {}
+  async function handleUrlChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setUrlInput(event.target.value);
+  }
 
   async function handleUrlSubmit() {
     setUrlLoading(true);
@@ -152,7 +154,7 @@ export default function Page() {
               type="text"
               placeholder="https://"
               value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
+              onChange={handleUrlChange}
               className="flex-1 text-black outline-0 py-2 px-4 rounded-xl truncate"
             />
 
