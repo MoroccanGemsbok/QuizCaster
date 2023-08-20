@@ -30,7 +30,7 @@ def main():
         webview.create_window(
             "QuizCaster", "http://localhost:3000/",
             # 192.168.2.162
-            width=1600, height=900, js_api=api, 
+            width=1600, height=1000, js_api=api
         )
         webview.start(debug=True #aodijfdsapofijsaofdisajfdpoaijfpodij
                       )

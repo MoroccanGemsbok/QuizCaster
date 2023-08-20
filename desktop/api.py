@@ -173,12 +173,20 @@ class Api:
             string_to_number = {
                 "one": 1,
                 "1": 1,
+                "won": 1,
+                "true": 1,
                 "two": 2,
                 "2": 2,
+                "too": 2,
+                "to": 2,
+                "false": 2,
                 "three": 3,
                 "3": 3,
+                "tree": 3,
+                "free": 3,
                 "four": 4,
                 "4": 4,
+                "for": 4
             }
             if response in string_to_number:
                 response = string_to_number[response]
