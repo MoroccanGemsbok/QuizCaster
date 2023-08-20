@@ -30,7 +30,18 @@ export default function Page() {
       <div className="flex flex-col gap-2 items-center">
         <h1>Summary</h1>
         <h2>Let's review the material first!</h2>
-        <h4>Task ID: {search}</h4>
+        <button
+          onClick={() => {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = search
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+          }}
+        >
+          Task ID: {search} (Click to copy)
+        </button>
       </div>
       <div className="bg-emerald-800 w-[700px] h-[360px] rounded-lg overflow-auto scrollbar-thin
         scrollbar-thumb-emerald-600 scrollbar-track-transparent scrollbar-thumb-rounded-full list-disc">
