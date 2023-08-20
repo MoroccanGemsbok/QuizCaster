@@ -5,6 +5,7 @@ import openai
 from pprint import pprint
 from text_generation.preprocessing import replace_ligatures, remove_duplicates, remove_hyphens, to_lowercase, remove_newlines, split_into_sentences, group_sentences
 from text_generation.postprocessing import process_tf, scramble_answers
+from text_generation.youtube_processer import youtube_process
 import time
 from concurrent.futures import ThreadPoolExecutor
 import json
@@ -142,6 +143,9 @@ def get_grouped_text(path: str, type: str, SENTENCES_PER_PROMPT) -> list[str]:
         page = requests.get(path)
         text = process_html(page.content, "website").splitlines()
         grouped_text = markdown_preprocess(text, SENTENCES_PER_PROMPT)
+    elif type == "youtube":
+        text = youtube_process(path)
+        grouped_text = group_sentences(text, SENTENCES_PER_PROMPT)
 
     print(grouped_text)
     return grouped_text
