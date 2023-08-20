@@ -26,8 +26,6 @@ export default function Page({ params }: Params) {
   useEffect(() => {
     const startSpeech = async () => {
       // @ts-ignore
-      await window.pywebview.api.narrate_stop()
-      // @ts-ignore
       const correct = await window.pywebview.api.question_set(currentQuestion)
       if (correct) {
         setAnswer(currentQuestion.answer);
@@ -37,7 +35,14 @@ export default function Page({ params }: Params) {
       setState("Answer");
     }
     if (currentQuiz.audioMode) {
-      startSpeech();
+      setTimeout(startSpeech, 100);
+    }
+    return () => {
+      // @ts-ignore
+      if (window.pywebview) {
+        // @ts-ignore
+        window.pywebview.api.narrate_stop()
+      }
     }
   }, []);
 

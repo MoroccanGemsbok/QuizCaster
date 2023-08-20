@@ -42,9 +42,9 @@ export default function Page() {
           onClick={async () => {
             currentQuiz.setAudioMode(!currentQuiz.audioMode)
             // @ts-ignore
-            if (currentQuiz.audioMode && window.pywebview) {
-              // @ts-ignore
-              await window.pywebview.api.narrate_stop()
+            await window.pywebview.api.narrate_stop()
+            // @ts-ignore
+            if (!currentQuiz.audioMode && window.pywebview) {
               // @ts-ignore
               await window.pywebview.api.narrate_start(currentQuiz.summary.replace(/^#*/gm, ""))
             }
