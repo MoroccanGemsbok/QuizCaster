@@ -61,7 +61,7 @@ export default function Page() {
 
     const link = urlInput;
 
-        if (link.includes("youtube")) {
+        if (link.includes("https://www.youtube.com")) {
           const youtube_id = link.split("v=")[1];
           // @ts-ignore
           const grouped_text_summary =

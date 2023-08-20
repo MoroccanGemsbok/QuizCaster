@@ -125,6 +125,7 @@ def process_html(html_content, type):
 
 # type is either "pdf", "md", or "website"
 def get_grouped_text(path: str, type: str, SENTENCES_PER_PROMPT) -> list[str]:
+    print(f"type: '{type}'")
     if type == "pdf":
         text = read_pdf(path)
         grouped_text = pdf_preprocess(text, SENTENCES_PER_PROMPT)

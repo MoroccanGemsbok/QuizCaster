@@ -77,7 +77,7 @@ export default function Page({ params }: Params) {
           {currentQuestion.options.map((option, index) => (
             <div
               key={index}
-              className={`flex justify-center items-center rounded-3xl cursor-pointer 
+              className={`flex justify-center items-center rounded-3xl cursor-pointer text-center 
                 ${["bg-red-600", "bg-green-700", "bg-blue-500", "bg-amber-600"][index]}`}
               onClick={() => {
                 setAnswer(index);
