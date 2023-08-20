@@ -25,7 +25,7 @@ def get_transcript(yt_id):
         print(e)
 
 
-def _bayes(model, vectorizer, text):
+def naive_bayes(model, vectorizer, text):
     indices = []
     result = []
     loaded_model = joblib.load(model)
@@ -51,6 +51,6 @@ def _bayes(model, vectorizer, text):
 def youtube_process(yt_id):
     # Youtube ID (Replace with your own)
     text = get_transcript(yt_id)
-    corrected_text = _bayes('text_generation/_bayes_model.joblib', 'text_generation/vectorizer.joblib', text)
+    corrected_text = naive_bayes('text_generation/naive_bayes_model.joblib', 'text_generation/vectorizer.joblib', text)
     return corrected_text
 
