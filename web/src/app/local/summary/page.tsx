@@ -2,7 +2,7 @@
 
 import { BackButton } from "@/components/BackButton";
 import { useCurrentQuiz } from "@/contexts/QuizContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 // @ts-ignore
 import ReactMarkdown from "react-markdown";
@@ -11,6 +11,8 @@ import ReactMarkdown from "react-markdown";
 export default function Page() {
   const router = useRouter();
   const currentQuiz = useCurrentQuiz();
+  const searchParams = useSearchParams();
+  const search = searchParams?.get('uuid');
 
   useEffect(() => {
     return () => {
@@ -28,6 +30,7 @@ export default function Page() {
       <div className="flex flex-col gap-2 items-center">
         <h1>Summary</h1>
         <h2>Let's review the material first!</h2>
+        <h4>Task ID: {search}</h4>
       </div>
       <div className="bg-emerald-800 w-[700px] h-[360px] rounded-lg overflow-auto scrollbar-thin
         scrollbar-thumb-emerald-600 scrollbar-track-transparent scrollbar-thumb-rounded-full list-disc">
