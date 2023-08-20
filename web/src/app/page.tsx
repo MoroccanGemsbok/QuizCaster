@@ -9,7 +9,7 @@ import { useState } from "react";
 export default function Page() {
   const [currentFileName, setCurrentFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isParsingPDF, setIsParsingPDF] = useState(false);
+  const [isParsingFile, setIsParsingFile] = useState(false);
   const quizData = useCurrentQuiz();
   const router = useRouter();
   const [uuidSearch, setUuidSearch] = useState("");
@@ -24,7 +24,7 @@ export default function Page() {
     try {
       const response = await axios.post("/api/addQuiz", quizData);
       console.log(response.data.uuid);
-      router.push(`/local/summary?uuid=${response.data.uuid}`); 
+      router.push(`/local/summary?uuid=${response.data.uuid}`);
       setIsLoading(false);
     } catch (error) {
       console.error("Error saving quiz:", error);
@@ -35,12 +35,12 @@ export default function Page() {
   function handleUuidChange(event: React.ChangeEvent<HTMLInputElement>) {
     setUuidSearch(event.target.value);
   }
-  
+
   async function handleUuidSubmit() {
     setUuidLoading(true);
     try {
       const response = await axios.get(`/api/checkUuid?uuid=${uuidSearch}`);
-      
+
       if (response.data.exists) {
         router.push(`/local/summary?uuid=${uuidSearch}`);
       } else {
@@ -53,35 +53,40 @@ export default function Page() {
       setUuidLoading(false);
     }
   }
-  
+
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
       reader.onload = async(event: ProgressEvent<FileReader>) => {
-        const base64String = event.target?.result?.toString()?.split(',')[1];
-        setIsParsingPDF(true);
-        if (base64String) {
+        const exts = selectedFile.name.split('.')
+        const filetype = exts[exts.length - 1]
+        let rawString;
+        setIsParsingFile(true);
+        if (filetype === "pdf") {
+          rawString = event.target?.result?.toString()?.split(',')[1];
+        } else if (filetype === "md") {
+          rawString = await selectedFile.text();
+        }
+        if (rawString) {
           // @ts-ignore
-          const grouped_text_summary = await window.pywebview.api.get_grouped_text(base64String, "pdf", 50);
+          const grouped_text_summary = await window.pywebview.api.get_grouped_text(rawString, filetype, 50);
           // @ts-ignore
-          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(base64String, "pdf", 5);
+          const grouped_text_quiz = await window.pywebview.api.get_grouped_text(rawString, filetype, 5);
           // @ts-ignore
           const summary = await window.pywebview.api.return_summary(grouped_text_summary);
           // @ts-ignore
           const quiz = await window.pywebview.api.return_quiz(grouped_text_quiz);
-
           quizData.setSummary(summary);
           quizData.setQuestions(quiz);
-          setIsParsingPDF(false);
+          setIsParsingFile(false);
         }
+
       };
       reader.readAsDataURL(selectedFile);
     }
   }
-
-
 
   return (
     <div className="flex flex-1 bg-slate-800 justify-center items-center">
@@ -95,12 +100,12 @@ export default function Page() {
           </div>
           <button
             className={`text-2xl py-2 px-6 rounded-full font-semibold ${
-              isLoading || isParsingPDF ? "bg-gray-400" : "bg-emerald-600"
+              isLoading || isParsingFile ? "bg-gray-400" : "bg-emerald-600"
             }`}
             onClick={handleGoClick}
-            disabled={isLoading || isParsingPDF}
+            disabled={isLoading || isParsingFile}
           >
-            {isLoading ? "Loading..." : isParsingPDF ? "Loading PDF..." : "Go"}
+            {isLoading ? "Loading..." : isParsingFile ? "Loading file..." : "Go"}
           </button>
         </div>
 
@@ -118,7 +123,7 @@ export default function Page() {
         <div className={containerClass}>
           <h2>Or start with a file:</h2>
           <input
-            accept=".md, .txt, .pdf"
+            accept=".md, .pdf"
             type="file"
             id="fileInput"
             onChange={handleFileChange}
@@ -129,7 +134,7 @@ export default function Page() {
             className="bg-slate-600 rounded-xl h-36 cursor-pointer flex flex-col justify-center items-center
                       text-slate-400"
           >
-            <p>Click to select a markdown, text, or PDF file (md, txt, pdf)</p>
+            <p>Click to select a markdown or PDF file (md, pdf)</p>
             <p>
               Selected file:{" "}
               <span className="font-semibold text-slate-300">
