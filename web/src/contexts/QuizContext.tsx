@@ -1,47 +1,28 @@
 import { createContext, useContext } from "react";
 
-type Question = {
+export type Question = {
   question: string;
   format: "MC" | "TF";
   options: string[];
   answer: number
 }
 
-type Quiz = {
+export type Quiz = {
+  audioMode: boolean;
+  setAudioMode: (audioMode: boolean) => void;
   summary: string;
+  setSummary: (summary: string) => void;
   questions: Question[];
+  setQuestions: (questions: Question[]) => void;
 }
 
-const tmpSummary = `
-## About
-Hololive Production, or simply known as hololive, is a Virtual Talent agency consisting of Virtual YouTubers owned by Japanese tech entertainment company COVER Corporation.
-
-## Hololive English -Council-
-Council currently has 4 members:
-- Ceres Fauna
-- Ouro Kronii
-- Nanashi Mumei (Brasen's oshi)
-- Hakos Baelz
-
-PLAP PLAP PLAP
-`
-
 const CurrentQuizContext = createContext<Quiz>({
-  summary: tmpSummary,
-  questions: [
-    {
-      question: "Who is Brasen's oshi?",
-      format: "MC",
-      options: ["Hakos Baelz", "Ceres Fauna", "Ouro Kronii", "Nanashi Mumei"],
-      answer: 3
-    },
-    {
-      question: "Is Gawr Gura a member of Hololive English -Council-?",
-      format: "TF",
-      options: ["True", "False"],
-      answer: 1
-    }
-  ]
+  audioMode: false,
+  setAudioMode: (_: boolean) => {},
+  summary: "",
+  setSummary: (_: string) => {},
+  questions: [],
+  setQuestions: (_: Question[]) => {},
 });
 
 export const CurrentQuizProvider = CurrentQuizContext.Provider;

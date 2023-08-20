@@ -5,7 +5,6 @@ import wave
 import time
 import audioop
 import math
-import numpy
 from collections import deque
 import openai
 
@@ -18,6 +17,7 @@ PREV_AUDIO = 0.2
 FILENAME = "user_response.wav"
 openai.api_key = openai_api_key
 
+
 class Api:
 
     def __init__(self, threshold):
@@ -27,29 +27,9 @@ class Api:
         self.stop = False
         self.threshold = threshold
 
-    def audio_int(self, num_samples=50):
-        """ Gets average audio intensity of your mic sound. You can use it to get
-            average intensities while you're talking and/or silent. The average
-            is the avg of the 20% largest intensities recorded.
-        """
-        p = pyaudio.PyAudio()
-        stream = p.open(format=FORMAT,
-                        channels=CHANNELS,
-                        rate=RATE,
-                        input=True,
-                        frames_per_buffer=CHUNK)
-        values = []
-        for i in range(num_samples):
-            values.append(audioop.rms(stream.read(CHUNK), 2))
-        rms = numpy.mean(values)
-        decibel = 20 * math.log10(rms)
-        stream.close()
-        p.terminate()
-        return decibel + 5
-
-    def narrate_summary(self, summary):
+    def narrate_start(self, text):
         self.stop = False
-        self.azure_save_wav(summary)
+        self.azure_save_wav(text)
         file_name = "narration.wav"
 
         self.wf = wave.open(file_name, 'rb')
@@ -62,7 +42,7 @@ class Api:
         )
         data = self.wf.readframes(CHUNK)
 
-        while data != '' and not self.stop:
+        while data != b'' and not self.stop:
             self.stream.write(data)
             data = self.wf.readframes(CHUNK)
 
@@ -111,6 +91,7 @@ class Api:
             print(f"Speech synthesis canceled: {cancellation_details}")
 
     def listening(self, threshold):
+        #self.stop = False
         p = pyaudio.PyAudio()
         stream = p.open(format=FORMAT,
                         channels=CHANNELS,
@@ -170,9 +151,6 @@ class Api:
             return transcript["text"]
 
     def question_set(self, quiz_set):
-        print("QuizCaster starting up")
-        print(f"Ready - threshold is: {self.threshold}")
-        print(quiz_set)
         question = quiz_set["question"]
         answers = quiz_set["options"]
         correct = quiz_set["answer"] + 1
@@ -187,11 +165,26 @@ class Api:
 
         if timed_out is True:
             self.azure_speak(f"Time's up! The correct answer is {correct}- {answers[int(correct) - 1]}.")
+            return False
         else:
             response = self.transcribe_audio(FILENAME)
-            response = response.lower()
-            self.azure_speak(response)
+            response = response.strip().lower().replace(".", "").replace("?", "").replace("!", "")
+            string_to_number = {
+                "one": 1,
+                "1": 1,
+                "two": 2,
+                "2": 2,
+                "three": 3,
+                "3": 3,
+                "four": 4,
+                "4": 4,
+            }
+            if response in string_to_number:
+                response = string_to_number[response]
+            self.azure_speak(str(response))
             if response == correct:
                 self.azure_speak("Correct!")
+                return True
             else:
                 self.azure_speak(f"Incorrect! The correct answer is {correct}- {answers[int(correct) - 1]}.")
+                return False

@@ -24,8 +24,26 @@ export default function Page({ params }: Params) {
   const router = useRouter();
 
   useEffect(() => {
-    // @ts-ignore
-    window.pywebview.api.question_set(currentQuestion)
+    const startSpeech = async () => {
+      // @ts-ignore
+      const correct = await window.pywebview.api.question_set(currentQuestion)
+      if (correct) {
+        setAnswer(currentQuestion.answer);
+      } else {
+        setAnswer(-1);
+      }
+      setState("Answer");
+    }
+    if (currentQuiz.audioMode) {
+      setTimeout(startSpeech, 100);
+    }
+    return () => {
+      // @ts-ignore
+      if (window.pywebview) {
+        // @ts-ignore
+        window.pywebview.api.narrate_stop()
+      }
+    }
   }, []);
 
   return (

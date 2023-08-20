@@ -3,6 +3,7 @@
 import axios from "axios";
 // @ts-ignore
 import { useCurrentQuiz } from "../contexts/QuizContext.tsx";
+import { btoa } from "buffer";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -53,19 +54,28 @@ export default function Page() {
     }
   }
   
-  function handleFileChange(event: any) {
-    const selectedFile = event.target.files[0];
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setCurrentFileName(selectedFile.name);
       const reader = new FileReader();
-      reader.onload = (event: any) => {
-        const content = event.target.result;
-        // @ts-ignore
-        window.pywebview.api.upload_file(content);
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const base64String = event.target?.result?.toString()?.split(',')[1];
+        if (base64String) {
+          axios.post('/api/process', { file: base64String })
+            .then(response => {
+              console.log(response.data);
+            })
+            .catch(error => {
+              console.error('Error processing file:', error);
+            });
+        }
       };
-      reader.readAsText(selectedFile);
+      reader.readAsDataURL(selectedFile);
     }
   }
+
+
 
   return (
     <div className="flex flex-1 bg-slate-800 justify-center items-center">
